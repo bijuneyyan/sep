@@ -1,746 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>8x8 Checkerboard Ball Game - Goals & Toggle</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Saturday Evening Productions</title>
+
+<!-- Google Fonts Montserrat -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400&display=swap" rel="stylesheet" />
+
 <style>
+  /* Reset and base */
   html, body {
-    margin:0; padding:0; height:100%; font-family:Arial,sans-serif; user-select:none;
-    background:#f0f0f0; display:flex; justify-content:center; align-items:center;
-    height:100vh;
-  }
-  #container {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    width: 90vw;
-    max-width: 900px;
-    height: 70vh;
-    max-height: 480px;
-    background: #f0f0f0;
-  }
-  #boardContainer {
-    width: 75%;
     height: 100%;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    color: white;
+  }
+  body {
     position: relative;
-    touch-action: none;
-  }
-  #board {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
-    width: 100%;
-    height: 100%;
-    border: 2px solid #333;
-    background-color: #eee;
-  }
-  .cell {
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    position: relative;
+    background: url('resources/bgvideo.webp') no-repeat center center fixed;
+    background-size: cover;
+    overflow-x: hidden;
+    overflow-y: auto;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    color: rgba(0, 0, 0, 0.3);
-    user-select: none;
-    font-size: 0.9vw;
-    text-align: center;
-    padding: 2px;
   }
-  .blackCell {
-    background-color: #444;
-    color: rgba(255, 255, 255, 0.7);
-  }
-  .whiteCell {
-    background-color: #eee;
-  }
-  #ball {
-    position: absolute;
-    width: 6%;
-    aspect-ratio: 1/1;
-    border-radius: 50%;
-    box-shadow: 0 0 8px 2px rgba(0,0,0,0.7);
-    cursor: pointer;
-    touch-action: none;
-    z-index: 10;
-    user-select: none;
-    transition: background 0.3s, border-color 0.3s;
-    left: 0;
-    top: 0;
-    transform-origin: center center;
-  }
-  #ball.blackTurn {
-    background: radial-gradient(circle at 30% 30%, #222, #000);
-    border: 2px solid white;
-  }
-  #ball.whiteTurn {
-    background: radial-gradient(circle at 30% 30%, #fff, #ddd);
-    border: 2px solid black;
-  }
-  #elasticBand {
-    position: absolute;
-    pointer-events: none;
-    z-index: 9;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-  .dot {
-    width: 0.9%;
-    aspect-ratio: 1/1;
-    background-color: black;
-    border-radius: 50%;
-    position: absolute;
-    pointer-events: none;
-  }
-  /* Original goal colors and borders restored */
-  .goalMarker {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: 5;
-  }
-  .goalLeft {
-    left: 0;
-    background: black;
-    border-right: 1px solid white;
-  }
-  .goalRight {
-    right: 0;
-    background: white;
-    border-left: 1px solid black;
-  }
-  #infoPanel {
-    width: 25%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 12px;
-    padding-left: 15px;
-    box-sizing: border-box;
-  }
-  #gameInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-  #turnInfo, #scoreBoard {
-    font-weight: bold;
-    font-size: 1.15rem;
-    text-align: left;
-  }
-  #btnContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  button {
-    padding: 8px 10px;
-    font-size: 1rem;
-    cursor: pointer;
-    user-select: none;
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  button:hover {
-    background-color: #f0f0f0;
-    box-shadow: 0 0 6px rgba(0,0,0,0.1);
-  }
-  button:active {
-    background-color: #ddd;
-  }
-  #confettiOverlay {
+  body::before {
+    content: "";
     position: fixed;
     inset: 0;
-    width: 100vw;
-    height: 100vh;
     pointer-events: none;
-    z-index: 9999;
-    display: none;
+    background-image: radial-gradient(black 2.0px, transparent 0.6px);
+    background-size: 6px 6px;
+    opacity: 0.25;
+    z-index: 1;
+  }
+  .container {
+    position: relative;
+    z-index: 2; /* Above overlay */
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-circle {
+    background-color: black;
+    border-radius: 50%;
+    width: 108px;
+    height: 108px;
+    display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
   }
-  #confettiMessage {
-    position: absolute;
-    width: 100vw;
-    top: 20vh;
-    left: 0;
-    text-align: center;
-    font-size: 3rem;
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 1px 2px 8px #222, 2px 2px 11px #333;
+  .logo-circle object {
+    width: 72px;
+    height: 72px;
+  }
+  .center-text {
+    font-weight: 400;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    user-select: none;
     pointer-events: none;
-    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+  /* Social icons container */
+  .social-links {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    z-index: 2;
+  }
+  .social-links a {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    background-color: black;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s;
+  }
+  .social-links a:hover {
+    background-color: #444;
+  }
+  .social-links a object {
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+  }
+  /* Responsive styles for screens <= 640px */
+  @media (max-width: 640px) {
+    .container {
+      flex-direction: column;
+      gap: 12px;
+      padding: 0 16px;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .logo-circle {
+      width: 72px;
+      height: 72px;
+    }
+    .logo-circle object {
+      width: 48px;
+      height: 48px;
+    }
+    .center-text {
+      font-size: 1.8rem;
+      white-space: normal;
+      word-break: break-word;
+    }
+    .social-links {
+      gap: 16px;
+      bottom: 12px;
+    }
+    .social-links a {
+      width: 32px;
+      height: 32px;
+    }
+    .social-links a object {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  /* Hamburger menu styles */
+  .hamburger-menu {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 24px;
+    cursor: pointer;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .hamburger-menu div {
+    height: 4px;
+    background-color: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+  /* Change hamburger to X when active */
+  .hamburger-menu.active div:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .hamburger-menu.active div:nth-child(2) {
+    opacity: 0;
+  }
+  .hamburger-menu.active div:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  /* Dropdown menu styles */
+  .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    right: 16px;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 3;
+    min-width: 140px;
+  }
+  .dropdown-menu.show {
+    display: flex;
+  }
+  .dropdown-menu button {
+    all: unset;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+  }
+  .dropdown-menu button:hover {
+    color: #ccc;
+  }
+
+  /* About overlay modal styles */
+  .about-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,0,0,0.75);
+    z-index: 4;
+    padding: 16px;
+  }
+  .about-overlay.show {
+    display: flex;
+  }
+  .about-content {
+    background-color: black;
+    border-radius: 20px;
+    padding: 24px 28px;
+    max-width: 420px;
+    color: white;
+    font-size: 1rem;
+    line-height: 1.5;
+    position: relative;
+    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+  }
+  .about-content a {
+    color: #1e90ff;
+    text-decoration: none;
+  }
+  .about-content a:hover {
+    text-decoration: underline;
+  }
+  .about-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
   }
 </style>
 </head>
 <body>
-  <div id="container">
-    <div id="boardContainer">
-      <div id="board"></div>
-      <div id="elasticBand"></div>
-      <div id="ball"></div>
-      <!-- Goal markers -->
-      <div id="goalLeft" class="goalMarker goalLeft"></div>
-      <div id="goalRight" class="goalMarker goalRight"></div>
+  <!-- Hamburger menu button -->
+  <div class="hamburger-menu" id="hamburgerMenu" aria-label="Menu" role="button" tabindex="0" aria-expanded="false" aria-controls="dropdownMenu">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <!-- Dropdown menu -->
+  <nav class="dropdown-menu" id="dropdownMenu" role="menu" aria-hidden="true">
+    <button id="aboutBtn" role="menuitem">ABOUT</button>
+    <a href="mailto:contact@example.com" style="color:white; text-decoration:none;" role="menuitem">CONTACT</a>
+  </nav>
+
+  <div class="container" aria-label="Main content">
+    <div class="logo-circle" aria-hidden="true">
+      <object type="image/svg+xml" data="resources/SEP_logo.svg" aria-label="SEP logo"></object>
     </div>
-    <div id="infoPanel">
-      <div id="gameInfo">
-        <div id="turnInfo">Turn: Black</div>
-        <div id="scoreBoard">Black: 0 | White: 0</div>
-      </div>
-      <div id="btnContainer">
-        <button id="centerBallBtn">BALL IN CENTER</button>
-        <button id="resetGameBtn">RESET GAME</button>
-        <button id="fullscreenBtn">TOGGLE FULLSCREEN</button>
-      </div>
+    <div class="center-text" aria-live="polite">SATURDAY EVENING PRODUCTIONS</div>
+  </div>
+
+  <div class="social-links" aria-label="social media links">
+    <a href="https://instagram.com/bijuneyyan" target="_blank" rel="noopener noreferrer" aria-label="Instagram @bijuneyyan">
+      <object type="image/svg+xml" data="resources/SEP_social_instagram.svg"></object>
+    </a>
+    <a href="https://youtube.com/@bijuneyyan" target="_blank" rel="noopener noreferrer" aria-label="YouTube @bijuneyyan">
+      <object type="image/svg+xml" data="resources/SEP_social_yt.svg"></object>
+    </a>
+    <a href="https://play.google.com/store/apps/dev?id=5056229812324246091" target="_blank" rel="noopener noreferrer" aria-label="Google Play Store Developer Page">
+      <object type="image/svg+xml" data="resources/SEP_social_googleplay.svg"></object>
+    </a>
+  </div>
+
+  <!-- About overlay modal -->
+  <div class="about-overlay" id="aboutOverlay" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" tabindex="-1">
+    <div class="about-content">
+      <button class="about-close-btn" id="aboutCloseBtn" aria-label="Close about overlay">&times;</button>
+      <p id="aboutTitle" style="font-weight: 700; margin-bottom: 12px;">ABOUT</p>
+      <p>
+        SATURDAY EVENING PRODUCTIONS is the personal creative space of&nbsp;
+        <a href="https://www.bijuneyyan.com/" target="_blank" rel="noopener noreferrer">@bijuneyyan</a>,
+        where stories, music, and visuals come to life. From short films to music videos and beyond,
+        every project is a small experiment in creativity, shaped with attention and passion.
+      </p>
     </div>
   </div>
 
-  <div id="confettiOverlay">
-    <div id="confettiMessage"></div>
-    <canvas id="confettiCanvas"></canvas>
-  </div>
 <script>
-(() => {
-  const boardSize = 8;
-  const letters = ['a','b','c','d','e','f','g','h'];
-  const deceleration = 0.95;
-  const minVelocity = 0.01;
-  const winningScore = 5;
+  const hamburgerMenu = document.getElementById('hamburgerMenu');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+  const aboutBtn = document.getElementById('aboutBtn');
+  const aboutOverlay = document.getElementById('aboutOverlay');
+  const aboutCloseBtn = document.getElementById('aboutCloseBtn');
 
-  let boardWidth, boardHeight, cellWidth, cellHeight, ballRadiusX, ballRadiusY;
-  const boardContainer = document.getElementById('boardContainer');
-  const board = document.getElementById('board');
-  const ballEl = document.getElementById('ball');
-  const turnInfo = document.getElementById('turnInfo');
-  const scoreBoard = document.getElementById('scoreBoard');
-  const elasticBand = document.getElementById('elasticBand');
-  const centerBallBtn = document.getElementById('centerBallBtn');
-  const resetGameBtn = document.getElementById('resetGameBtn');
-  const fullscreenBtn = document.getElementById('fullscreenBtn');
-
-  const goalLeft = document.getElementById('goalLeft');
-  const goalRight = document.getElementById('goalRight');
-
-  const confettiOverlay = document.getElementById('confettiOverlay');
-  const confettiCanvas = document.getElementById('confettiCanvas');
-  const confettiMessage = document.getElementById('confettiMessage');
-
-  let boardCells = [];
-  let ballPos = { x: 3.5, y: 3.5 };
-  let ballVelocity = { x: 0, y: 0 };
-  let dragging = false;
-  let dragStart = null;
-  let currentDragPos = null;
-  let currentTurn = 'black';
-  let scores = { black: 0, white: 0 };
-  let animationFrameId = null;
-  let canShoot = true;
-  let shotStartBlock = null;
-  let blocksVisible = false;
-  let gameEnded = false;
-
-  function createBoard() {
-    boardCells = [];
-    board.innerHTML = '';
-    for (let row = 0; row < boardSize; row++) {
-      for (let col = 0; col < boardSize; col++) {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        if ((row + col) % 2 === 0) {
-          cell.classList.add('whiteCell');
-        } else {
-          cell.classList.add('blackCell');
-        }
-        // Write labels "STRIKER" & "KEEPER" in designated blocks
-        const verticalLabel = boardSize - row;
-        const horizontalLabel = letters[col];
-        if ((verticalLabel === 4) && (horizontalLabel === 'a' || horizontalLabel === 'h')) {
-          cell.textContent = 'STRIKER';
-          cell.style.fontSize = '0.7vw';
-          cell.style.fontWeight = 'bold';
-          cell.style.color = cell.classList.contains('blackCell') ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)';
-        }
-        else if ((verticalLabel === 5) && (horizontalLabel === 'a' || horizontalLabel === 'h')) {
-          cell.textContent = 'KEEPER';
-          cell.style.fontSize = '0.7vw';
-          cell.style.fontWeight = 'bold';
-          cell.style.color = cell.classList.contains('blackCell') ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)';
-        }
-        else {
-          cell.textContent = ''; // no numeric or other labeling
-        }
-        board.appendChild(cell);
-        boardCells.push(cell);
-      }
-    }
-  }
-
-  function getCellColor(x, y) {
-    if (x < 0 || x >= boardSize || y < 0 || y >= boardSize) return null;
-    return ((x + y) % 2 === 0) ? 'white' : 'black';
-  }
-
-  function updateSizes() {
-    const rect = board.getBoundingClientRect();
-    boardWidth = rect.width;
-    boardHeight = rect.height;
-    cellWidth = boardWidth / boardSize;
-    cellHeight = boardHeight / boardSize;
-    const ballRect = ballEl.getBoundingClientRect();
-    ballRadiusX = (ballRect.width / cellWidth) / 2;
-    ballRadiusY = (ballRect.height / cellHeight) / 2;
-
-    const markerWidth = (cellWidth / 8);
-    goalLeft.style.width = markerWidth + "px";
-    goalRight.style.width = markerWidth + "px";
-
-    goalLeft.style.top = (3 * cellHeight) + "px";
-    goalLeft.style.height = (2 * cellHeight) + "px";
-    goalRight.style.top = (3 * cellHeight) + "px";
-    goalRight.style.height = (2 * cellHeight) + "px";
-
-    confettiCanvas.width = window.innerWidth;
-    confettiCanvas.height = window.innerHeight;
-    confettiOverlay.style.width = window.innerWidth + "px";
-    confettiOverlay.style.height = window.innerHeight + "px";
-  }
-
-  function clampBallPosition(x, y) {
-    const minX = -0.5 + ballRadiusX;
-    const maxX = boardSize - 0.5 - ballRadiusX;
-    const minY = -0.5 + ballRadiusY;
-    const maxY = boardSize - 0.5 - ballRadiusY;
-    return {
-      x: Math.min(maxX, Math.max(minX, x)),
-      y: Math.min(maxY, Math.max(minY, y)),
-    };
-  }
-
-  function gridToPx(x, y) {
-    return {
-      x: x * cellWidth + cellWidth / 2,
-      y: y * cellHeight + cellHeight / 2,
-    };
-  }
-
-  function setBallPosition(x, y) {
-    ballPos.x = x;
-    ballPos.y = y;
-    const pos = gridToPx(x, y);
-    ballEl.style.left = pos.x + 'px';
-    ballEl.style.top = pos.y + 'px';
-    ballEl.style.transform = 'translate(-50%, -50%)';
-  }
-
-  function updateBallStyle() {
-    if (currentTurn === 'black') {
-      ballEl.classList.add('blackTurn');
-      ballEl.classList.remove('whiteTurn');
-    } else {
-      ballEl.classList.add('whiteTurn');
-      ballEl.classList.remove('blackTurn');
-    }
-  }
-
-  function animate() {
-    if(gameEnded) return;
-    ballPos.x += ballVelocity.x;
-    ballPos.y += ballVelocity.y;
-
-    if (ballPos.x - ballRadiusX < -0.5 && ballVelocity.x < 0) {
-      ballVelocity.x = -ballVelocity.x;
-      ballPos.x = -0.5 + ballRadiusX;
-    }
-    if (ballPos.x + ballRadiusX > boardSize - 0.5 && ballVelocity.x > 0) {
-      ballVelocity.x = -ballVelocity.x;
-      ballPos.x = boardSize - 0.5 - ballRadiusX;
-    }
-    if (ballPos.y - ballRadiusY < -0.5 && ballVelocity.y < 0) {
-      ballVelocity.y = -ballVelocity.y;
-      ballPos.y = -0.5 + ballRadiusY;
-    }
-    if (ballPos.y + ballRadiusY > boardSize - 0.5 && ballVelocity.y > 0) {
-      ballVelocity.y = -ballVelocity.y;
-      ballPos.y = boardSize - 0.5 - ballRadiusY;
-    }
-
-    const clamped = clampBallPosition(ballPos.x, ballPos.y);
-    ballPos.x = clamped.x;
-    ballPos.y = clamped.y;
-
-    setBallPosition(ballPos.x, ballPos.y);
-
-    ballVelocity.x *= deceleration;
-    ballVelocity.y *= deceleration;
-
-    if (Math.abs(ballVelocity.x) < minVelocity && Math.abs(ballVelocity.y) < minVelocity) {
-      ballVelocity.x = 0;
-      ballVelocity.y = 0;
-      clearElasticBand();
-      const cellX = Math.min(boardSize - 1, Math.max(0, Math.round(ballPos.x)));
-      const cellY = Math.min(boardSize - 1, Math.max(0, Math.round(ballPos.y)));
-      const cellColor = getCellColor(cellX, cellY);
-      if (cellColor === currentTurn) {
-        canShoot = true;
-        turnInfo.textContent = `Turn: ${capitalize(currentTurn)} (Shoot Again!)`;
-      } else {
-        currentTurn = currentTurn === 'black' ? 'white' : 'black';
-        canShoot = true;
-        turnInfo.textContent = `Turn: ${capitalize(currentTurn)}`;
-        updateBallStyle();
-      }
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
-      return;
-    }
-
-    const scorer = checkGoal();
-    if (scorer) {
-      scoreGoal(scorer);
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
-      return;
-    }
-
-    animationFrameId = requestAnimationFrame(animate);
-  }
-
-  function checkGoal() {
-    const goalRows = [3, 4];
-    if (ballPos.x - ballRadiusX <= -0.5 && goalRows.includes(Math.floor(ballPos.y)))
-      return 'white';
-    if (ballPos.x + ballRadiusX >= boardSize - 0.5 && goalRows.includes(Math.floor(ballPos.y)))
-      return 'black';
-    return null;
-  }
-
-  function showConfettiAndReset(message, resetCallback, duration=2000) {
-    confettiMessage.textContent = message;
-    confettiOverlay.style.display = "flex";
-
-    const colors = [
-      "#f44336", "#e91e63", "#9c27b0",
-      "#2196f3", "#00bcd4", "#4caf50",
-      "#ffeb3b", "#ff9800", "#fff", "#000"
-    ];
-    const numParticles = 120;
-    const particles = [];
-    for (let i = 0; i < numParticles; i++) {
-      particles.push({
-        x: Math.random() * confettiCanvas.width,
-        y: Math.random() * -confettiCanvas.height / 2,
-        w: 8 + Math.random() * 8,
-        h: 3 + Math.random() * 7,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.1,
-        velX: Math.random() * 2 - 1,
-        velY: 2 + Math.random() * 4,
-        gravity: 0.15 + Math.random() * 0.05,
-        alpha: 1
-      });
-    }
-    let timeElapsed = 0;
-    let animationActive = true;
-    function drawConfetti() {
-      const ctx = confettiCanvas.getContext("2d");
-      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-      for (let p of particles) {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, p.alpha);
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.angle);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        ctx.restore();
-      }
-    }
-    function updateConfetti() {
-      for (let p of particles) {
-        p.x += p.velX;
-        p.y += p.velY;
-        p.velY += p.gravity;
-        p.angle += p.spin;
-        if (p.y > confettiCanvas.height) {
-          p.y = Math.random() * -60;
-          p.x = Math.random() * confettiCanvas.width;
-        }
-        p.alpha -= 0.0006;
-      }
-    }
-    function animateConfetti() {
-      if (!animationActive) return;
-      updateConfetti();
-      drawConfetti();
-      timeElapsed += 1/60;
-      if (timeElapsed < duration / 1000) {
-        requestAnimationFrame(animateConfetti);
-      } else {
-        animationActive = false;
-        confettiOverlay.style.display = "none";
-        confettiCanvas.getContext("2d").clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-        if (resetCallback) setTimeout(resetCallback, 300);
-      }
-    }
-    animateConfetti();
-  }
-
-  function scoreGoal(scorer) {
-    if (gameEnded) return;
-    const whiteReq = { x: 0, y: 4 };
-    const blackReq = { x: 7, y: 4 };
-    const whitePenalty = { x: 0, y: 3 };
-    const blackPenalty = { x: 7, y: 3 };
-
-    if (scorer === 'white') {
-      if (!shotStartBlock || shotStartBlock.x !== whiteReq.x || shotStartBlock.y !== whiteReq.y) {
-        canShoot = true;
-        ballVelocity.x = 0;
-        ballVelocity.y = 0;
-        setBallPosition(whitePenalty.x, whitePenalty.y);
-        currentTurn = 'black';
-        turnInfo.textContent = 'Turn: Black';
-        updateBallStyle();
-        shotStartBlock = null;
-        return;
-      }
-    } else if (scorer === 'black') {
-      if (!shotStartBlock || shotStartBlock.x !== blackReq.x || shotStartBlock.y !== blackReq.y) {
-        canShoot = true;
-        ballVelocity.x = 0;
-        ballVelocity.y = 0;
-        setBallPosition(blackPenalty.x, blackPenalty.y);
-        currentTurn = 'white';
-        turnInfo.textContent = 'Turn: White';
-        updateBallStyle();
-        shotStartBlock = null;
-        return;
-      }
-    }
-
-    scores[scorer]++;
-    scoreBoard.textContent = `Black: ${scores.black} | White: ${scores.white}`;
-
-    if (scores[scorer] >= winningScore) {
-      gameEnded = true;
-      showConfettiAndReset(
-        `${capitalize(scorer)} Wins!`,
-        () => {
-          gameEnded = false;
-          resetGame();
-        },
-        4000
-      );
-    } else {
-      showConfettiAndReset(
-        `${capitalize(scorer)} Scores!`,
-        () => {
-          resetBall(scorer === 'black' ? 'white' : 'black');
-        },
-        2000
-      );
-    }
-  }
-
-  function resetBall(player) {
-    canShoot = true;
-    ballVelocity.x = 0;
-    ballVelocity.y = 0;
-    setBallPosition(boardSize / 2 - 0.5, boardSize / 2 - 0.5);
-    currentTurn = player;
-    shotStartBlock = null;
-    turnInfo.textContent = 'Turn: ' + capitalize(player);
-    updateBallStyle();
-    clearElasticBand();
-  }
-
-  function resetGame() {
-    scores = { black: 0, white: 0 };
-    scoreBoard.textContent = `Black: 0 | White: 0`;
-    currentTurn = 'black';
-    resetBall('black');
-    createBoard();
-    blocksVisible = false;
-    for (const cell of boardCells) cell.style.color = "transparent";
-    gameEnded = false;
-  }
-
-  function capitalize(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }
-
-  function clientToBoardCoord(clientX, clientY) {
-    const rect = board.getBoundingClientRect();
-    let x = (clientX - rect.left) / cellWidth;
-    let y = (clientY - rect.top) / cellHeight;
-    x = Math.min(boardSize - 0.001, Math.max(-0.5, x));
-    y = Math.min(boardSize - 0.001, Math.max(-0.5, y));
-    return { x, y };
-  }
-
-  function clearElasticBand() {
-    while (elasticBand.firstChild) {
-      elasticBand.removeChild(elasticBand.firstChild);
-    }
-  }
-
-  function drawElasticBand() {
-    clearElasticBand();
-    if (!dragStart || !currentDragPos) return;
-    const ballCenter = gridToPx(ballPos.x, ballPos.y);
-    const startX = ballCenter.x;
-    const startY = ballCenter.y;
-    const rect = board.getBoundingClientRect();
-    let endX = currentPositionClientX;
-    let endY = currentPositionClientY;
-    endX = Math.min(rect.right, Math.max(rect.left, endX)) - rect.left;
-    endY = Math.min(rect.bottom, Math.max(rect.top, endY)) - rect.top;
-
-    const dx = endX - startX;
-    const dy = endY - startY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 10) return;
-    const dotSpacing = 8;
-    const count = Math.floor(dist / dotSpacing);
-    for (let i = 1; i <= count; i++) {
-      const t = i / count;
-      const dotX = startX + dx * t;
-      const dotY = startY + dy * t;
-      const dot = document.createElement('div');
-      dot.classList.add('dot');
-      dot.style.left = (dotX - 0.9 * ballEl.offsetWidth / 12) + 'px';
-      dot.style.top = (dotY - 0.9 * ballEl.offsetHeight / 12) + 'px';
-      elasticBand.appendChild(dot);
-    }
-  }
-
-  let currentPositionClientX = 0;
-  let currentPositionClientY = 0;
-
-  function onDragStart(event) {
-    if (!canShoot || animationFrameId !== null || gameEnded) return;
-    dragging = true;
-    let pos;
-    if (event.touches) {
-      pos = clientToBoardCoord(event.touches[0].clientX, event.touches[0].clientY);
-      currentPositionClientX = event.touches[0].clientX;
-      currentPositionClientY = event.touches[0].clientY;
-    } else {
-      pos = clientToBoardCoord(event.clientX, event.clientY);
-      currentPositionClientX = event.clientX;
-      currentPositionClientY = event.clientY;
-    }
-    dragStart = pos;
-    currentDragPos = pos;
-    drawElasticBand();
-    shotStartBlock = { x: Math.floor(pos.x), y: Math.floor(pos.y) };
-    event.preventDefault();
-  }
-
-  function onDragMove(event) {
-    if (!dragging) return;
-    event.preventDefault();
-    let pos;
-    if (event.touches) {
-      pos = clientToBoardCoord(event.touches[0].clientX, event.touches[0].clientY);
-      currentPositionClientX = event.touches[0].clientX;
-      currentPositionClientY = event.touches[0].clientY;
-    } else {
-      pos = clientToBoardCoord(event.clientX, event.clientY);
-      currentPositionClientX = event.clientX;
-      currentPositionClientY = event.clientY;
-    }
-    currentDragPos = pos;
-    drawElasticBand();
-  }
-
-  function onDragEnd(event) {
-    if (!dragging) return;
-    dragging = false;
-    let pos;
-    if (event.changedTouches) {
-      pos = clientToBoardCoord(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
-    } else {
-      pos = clientToBoardCoord(event.clientX, event.clientY);
-    }
-    currentDragPos = null;
-    clearElasticBand();
-    const dx = pos.x - dragStart.x;
-    const dy = pos.y - dragStart.y;
-    if (Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05) return;
-    const velocityScale = 0.3;
-    ballVelocity.x = -dx * velocityScale;
-    ballVelocity.y = -dy * velocityScale;
-    canShoot = false;
-    turnInfo.textContent = `Turn: ${capitalize(currentTurn)} (Ball Moving)`;
-    animationFrameId = requestAnimationFrame(animate);
-  }
-
-  centerBallBtn.addEventListener('click', () => {
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
-    }
-    resetBall(currentTurn);
+  // Toggle dropdown menu
+  hamburgerMenu.addEventListener('click', () => {
+    const expanded = hamburgerMenu.getAttribute('aria-expanded') === 'true';
+    hamburgerMenu.setAttribute('aria-expanded', !expanded);
+    dropdownMenu.classList.toggle('show');
+    dropdownMenu.setAttribute('aria-hidden', expanded);
   });
 
-  resetGameBtn.addEventListener('click', () => {
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
-    }
-    resetGame();
-  });
-
-  fullscreenBtn.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen().catch(() => {});
+  // Accessibility: toggle with keyboard enter or space on hamburger menu
+  hamburgerMenu.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      hamburgerMenu.click();
     }
   });
 
-  function init() {
-    createBoard();
-    updateSizes();
-    resetBall(currentTurn);
-    updateBallStyle();
-    clearElasticBand();
-    shotStartBlock = null;
-    blocksVisible = false;
-    gameEnded = false;
-  }
-
-  window.addEventListener('resize', () => {
-    updateSizes();
-    setBallPosition(ballPos.x, ballPos.y);
-    drawElasticBand();
+  // Open about overlay, hide dropdown
+  aboutBtn.addEventListener('click', () => {
+    aboutOverlay.classList.add('show');
+    dropdownMenu.classList.remove('show');
+    hamburgerMenu.setAttribute('aria-expanded', 'false');
+    dropdownMenu.setAttribute('aria-hidden', 'true');
+    aboutOverlay.focus();
   });
 
-  ballEl.addEventListener('mousedown', onDragStart);
-  window.addEventListener('mousemove', onDragMove);
-  window.addEventListener('mouseup', onDragEnd);
+  // Close about overlay on close button
+  aboutCloseBtn.addEventListener('click', () => {
+    aboutOverlay.classList.remove('show');
+    hamburgerMenu.focus();
+  });
 
-  ballEl.addEventListener('touchstart', onDragStart, { passive: false });
-  window.addEventListener('touchmove', onDragMove, { passive: false });
-  window.addEventListener('touchend', onDragEnd);
+  // Close about overlay on clicking outside content
+  aboutOverlay.addEventListener('click', (e) => {
+    if (e.target === aboutOverlay) {
+      aboutOverlay.classList.remove('show');
+      hamburgerMenu.focus();
+    }
+  });
 
-  window.addEventListener('load', init);
-})();
+  // Close about overlay on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && aboutOverlay.classList.contains('show')) {
+      aboutOverlay.classList.remove('show');
+      hamburgerMenu.focus();
+    }
+  });
 </script>
 </body>
 </html>
