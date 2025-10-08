@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Saturday Evening Productions</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400&display=swap" rel="stylesheet" />
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    color: white;
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+  }
+  body {
+    background: url('resources/bgvideo.webp') no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+  }
+
+  /* Main landing */
+  .main-landing {
+    scroll-snap-align: start;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Dotted overlay as a separate div */
+  .dotted-overlay {
+    pointer-events: none;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(black 2.0px, transparent 0.6px);
+    background-size: 6px 6px;
+    opacity: 0.25;
+    z-index: 1; /* below content but above background */
+  }
+
+  .container {
+    position: relative;
+    z-index: 2; /* above dotted overlay */
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+  }
+  .logo-circle {
+    background-color: black;
+    border-radius: 50%;
+    width: 108px; height: 108px;
+    display: flex;
+    justify-content: center; align-items: center;
+    flex-shrink: 0;
+  }
+  .logo-circle object {
+    width: 72px; height: 72px;
+  }
+  .center-text {
+    font-weight: 400;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    user-select: none;
+    pointer-events: none;
+    white-space: nowrap;
+    position: relative;
+    z-index: 2; /* above dotted */
+  }
+  .social-links {
+    position: fixed;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    z-index: 2; /* above dotted */
+  }
+  .social-links a {
+    display: inline-flex;
+    width: 40px; height: 40px;
+    background-color: black;
+    border-radius: 50%;
+    justify-content: center; align-items: center;
+    transition: background-color 0.3s;
+    position: relative;
+    z-index: 2;
+  }
+  .social-links a:hover { background-color: #444; }
+  .social-links a object { width: 24px; height: 24px; pointer-events: none; }
+
+  @media (max-width: 640px) {
+    .container { flex-direction: column; gap: 12px; padding: 0 16px; max-width: 90vw; text-align: center; }
+    .logo-circle { width: 72px; height: 72px; }
+    .logo-circle object { width: 48px; height: 48px; }
+    .center-text { font-size: 1.8rem; white-space: normal; word-break: break-word; }
+    .social-links { gap: 16px; bottom: 12px; }
+    .social-links a { width: 32px; height: 32px; }
+    .social-links a object { width: 18px; height: 18px; }
+  }
+
+  /* Hamburger */
+  .hamburger-menu {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    width: 32px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .hamburger-menu div {
+    height: 4px;
+    background-color: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+  .hamburger-menu.active div:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .hamburger-menu.active div:nth-child(2) { opacity: 0; }
+  .hamburger-menu.active div:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+  .dropdown-menu {
+    position: fixed;
+    top: 56px;
+    right: 16px;
+    background-color: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 15;
+    min-width: 140px;
+  }
+  .dropdown-menu.show { display: flex; }
+  .dropdown-menu button,
+  .dropdown-menu a {
+    all: unset;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+    margin: 2px 0;
+  }
+  .dropdown-menu button:hover, .dropdown-menu a:hover { color: #ccc; }
+
+  /* About overlay */
+  .about-overlay {
+    position: fixed; inset: 0; display: none;
+    align-items: center; justify-content: center;
+    background-color: rgba(0,0,0,0.75);
+    z-index: 20;
+    padding: 16px;
+  }
+  .about-overlay.show { display: flex; }
+  .about-content {
+    background-color: black;
+    border-radius: 20px;
+    padding: 24px 28px;
+    max-width: 420px;
+    color: white;
+    font-size: 1rem;
+    line-height: 1.5;
+    position: relative;
+    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+  }
+  .about-content a { color: #1e90ff; text-decoration: none; }
+  .about-content a:hover { text-decoration: underline; }
+  .about-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  /* Parallax Sections */
+  #parallaxSections {
+    scroll-snap-type: y mandatory;
+    overflow-y: visible;
+  }
+  .parallax-section {
+    scroll-snap-align: start;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    box-shadow: 0 0 32px rgba(0,0,0,0.08);
+    position: relative;
+    color: white;
+    user-select: none;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  .parallax-videos  { background: #5d7bfa; }
+  .parallax-stills  { background: #e77d5d; }
+  .parallax-music   { background: #43c386; }
+  .parallax-apps    { background: #455358; }
+  .parallax-games   { background: #eafb5d; color: #222; }
+</style>
+</head>
+<body>
+  <!-- Hamburger menu button -->
+  <div class="hamburger-menu" id="hamburgerMenu" aria-label="Menu" role="button" tabindex="0" aria-expanded="false" aria-controls="dropdownMenu">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <!-- Dropdown menu -->
+  <nav class="dropdown-menu" id="dropdownMenu" role="menu" aria-hidden="true"></nav>
+
+  <div class="main-landing" id="mainLanding">
+    <div class="dotted-overlay"></div>
+    <div class="container" aria-label="Main content">
+      <div class="logo-circle" aria-hidden="true">
+        <object type="image/svg+xml" data="resources/SEP_logo.svg" aria-label="SEP logo"></object>
+      </div>
+      <div class="center-text" aria-live="polite">SATURDAY EVENING PRODUCTIONS</div>
+    </div>
+    <div class="social-links" aria-label="social media links">
+      <a href="https://instagram.com/bijuneyyan" target="_blank" rel="noopener noreferrer" aria-label="Instagram @bijuneyyan">
+        <object type="image/svg+xml" data="resources/SEP_social_instagram.svg"></object>
+      </a>
+      <a href="https://youtube.com/@bijuneyyan" target="_blank" rel="noopener noreferrer" aria-label="YouTube @bijuneyyan">
+        <object type="image/svg+xml" data="resources/SEP_social_yt.svg"></object>
+      </a>
+      <a href="https://play.google.com/store/apps/dev?id=5056229812324246091" target="_blank" rel="noopener noreferrer" aria-label="Google Play Store Developer Page">
+        <object type="image/svg+xml" data="resources/SEP_social_googleplay.svg"></object>
+      </a>
+    </div>
+  </div>
+
+  <section id="parallaxSections" aria-label="Content sections"></section>
+
+  <div class="about-overlay" id="aboutOverlay" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" tabindex="-1">
+    <div class="about-content">
+      <button class="about-close-btn" id="aboutCloseBtn" aria-label="Close about overlay">&times;</button>
+      <p id="aboutTitle" style="font-weight: 700; margin-bottom: 12px;">ABOUT</p>
+      <p>
+        SATURDAY EVENING PRODUCTIONS is the personal creative space of&nbsp;
+        <a href="https://www.bijuneyyan.com/" target="_blank" rel="noopener noreferrer">@bijuneyyan</a>,
+        where stories, music, and visuals come to life. From short films to music videos and beyond,
+        every project is a small experiment in creativity, shaped with attention and passion.
+      </p>
+    </div>
+  </div>
+
+<script>
+  const sections = [
+    { name: "Videos", class: "parallax-videos" },
+    { name: "Stills", class: "parallax-stills" },
+    { name: "Music", class: "parallax-music" },
+    { name: "Apps", class: "parallax-apps" },
+    { name: "Games", class: "parallax-games" }
+  ];
+
+  // Insert parallax sections below landing
+  const parallaxSections = document.getElementById("parallaxSections");
+  parallaxSections.innerHTML = sections.map(s =>
+    `<div tabIndex="0" class="parallax-section ${s.class}" id="section-${s.name.toLowerCase()}" role="region" aria-label="${s.name} section">${s.name}</div>`
+  ).join('');
+
+  const hamburgerMenu = document.getElementById('hamburgerMenu');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+  const aboutOverlay = document.getElementById('aboutOverlay');
+  const aboutCloseBtn = document.getElementById('aboutCloseBtn');
+
+  dropdownMenu.innerHTML = '';
+
+  // Add "Home"/landing as top menu item
+  const homeBtn = document.createElement('button');
+  homeBtn.textContent = 'HOME';
+  homeBtn.onclick = () => {
+    dropdownMenu.classList.remove('show');
+    hamburgerMenu.setAttribute('aria-expanded', 'false');
+    dropdownMenu.setAttribute('aria-hidden', 'true');
+    document.getElementById("mainLanding").scrollIntoView({ behavior: 'smooth' });
+  };
+  dropdownMenu.appendChild(homeBtn);
+
+  sections.forEach(({ name }) => {
+    const btn = document.createElement('button');
+    btn.textContent = name.toUpperCase();
+    btn.onclick = () => {
+      dropdownMenu.classList.remove('show');
+      hamburgerMenu.setAttribute('aria-expanded', 'false');
+      dropdownMenu.setAttribute('aria-hidden', 'true');
+      document.getElementById(`section-${name.toLowerCase()}`).scrollIntoView({ behavior: 'smooth' });
+    };
+    dropdownMenu.appendChild(btn);
+  });
+
+  const aboutBtn = document.createElement('button');
+  aboutBtn.textContent = 'ABOUT';
+  aboutBtn.onclick = () => {
+    aboutOverlay.classList.add('show');
+    dropdownMenu.classList.remove('show');
+    hamburgerMenu.setAttribute('aria-expanded', 'false');
+    dropdownMenu.setAttribute('aria-hidden', 'true');
+    aboutOverlay.focus();
+  };
+  dropdownMenu.appendChild(aboutBtn);
+
+  const contactLink = document.createElement('a');
+  contactLink.textContent = 'CONTACT';
+  contactLink.href = 'mailto:contact@example.com';
+  contactLink.style.color = 'white';
+  contactLink.style.textDecoration = 'none';
+  contactLink.setAttribute('role', 'menuitem');
+  dropdownMenu.appendChild(contactLink);
+
+  hamburgerMenu.addEventListener('click', () => {
+    const expanded = hamburgerMenu.getAttribute('aria-expanded') === 'true';
+    hamburgerMenu.setAttribute('aria-expanded', !expanded);
+    dropdownMenu.classList.toggle('show');
+    dropdownMenu.setAttribute('aria-hidden', expanded);
+    hamburgerMenu.classList.toggle('active');
+  });
+
+  hamburgerMenu.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') e.preventDefault(), hamburgerMenu.click();
+  });
+
+  aboutCloseBtn.addEventListener('click', () => {
+    aboutOverlay.classList.remove('show');
+    hamburgerMenu.focus();
+  });
+
+  aboutOverlay.addEventListener('click', (e) => {
+    if (e.target === aboutOverlay) {
+      aboutOverlay.classList.remove('show');
+      hamburgerMenu.focus();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && aboutOverlay.classList.contains('show')) {
+      aboutOverlay.classList.remove('show');
+      hamburgerMenu.focus();
+    }
+  });
+
+  // Subtle background parallax effect on scroll within visible sections
+  window.addEventListener('scroll', () => {
+    const vh = window.innerHeight;
+    sections.forEach(({ name }) => {
+      const el = document.getElementById(`section-${name.toLowerCase()}`);
+      const rect = el.getBoundingClientRect();
+      if (rect.top < vh && rect.bottom > 0) {
+        el.style.backgroundPosition = `center calc(50% + ${rect.top * 0.15}px)`;
+      }
+    });
+  });
+</script>
+</body>
+</html>
